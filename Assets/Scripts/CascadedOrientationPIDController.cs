@@ -1,14 +1,14 @@
 /*
- * OrientationPIDController.cs
+ * CascadedOrientationController.cs
  * Bart Trzynadlowski, 2024
  * 
- * Orientation PID controller, analogous to PositionPIDController. Monitors orientation error
- * (angular error) directly with a single loop.
+ * Orientation PID controller with both an orientation PID controller and angular velocity PID
+ * controller in series, analogous to CascadedPIDController (which is for linear motion).
  */
 
 using UnityEngine;
 
-public class OrientationPIDController : MonoBehaviour
+public class CascadedOrientationPIDController : MonoBehaviour
 {
     [SerializeField]
     private Transform _target;
@@ -23,13 +23,22 @@ public class OrientationPIDController : MonoBehaviour
     private float _controlLoopFrequency = 10;
 
     [SerializeField]
-    private float _Kp = 1.0f;
+    private float _positionKp = 1.0f;
 
     [SerializeField]
-    private float _Ki = 0.0f;
+    private float _positionKi = 0.0f;
 
     [SerializeField]
-    private float _Kd = 0.0f;
+    private float _positionKd = 0.0f;
+
+    [SerializeField]
+    private float _velocityKp = 1.0f;
+
+    [SerializeField]
+    private float _velocityKi = 0.0f;
+
+    [SerializeField]
+    private float _velocityKd = 0.0f;
 
     private float _lastLoopTime = 0;
 
@@ -41,6 +50,7 @@ public class OrientationPIDController : MonoBehaviour
 
     private Vector3? _lastForward = null;
     private PIDState _orientationControllerState = new PIDState() { prevError = null, integralError = 0 };
+    private PIDState _velocityControllerState = new PIDState() { prevError = null, integralError = 0 };
 
     private float _throttle = 0;
     private float _angularVelocity = 0; // drives the vehicle (but we don't sample it directly in order to be more realistic)
@@ -59,12 +69,15 @@ public class OrientationPIDController : MonoBehaviour
                 return;
             }
 
-            // Sample current state (TODO: currently velocity is unused, but we could build a cascaded position -> velocity controller as for linear motion)
+            // Sample current state
             float angularVelocity = SampleAngularVelocity(dt);
             _lastForward = transform.forward;
 
-            // Angular Position controller
-            _throttle = ControllerStep(name: "Angular", state: ref _orientationControllerState, dt: dt, Kp: _Kp, Ki: _Ki, Kd: _Kd, signedError: SignedOrientationError(currentForward: transform.forward, currentPosition: transform.position));
+            // Angular position controller
+            float targetAngularVelocity = ControllerStep(name: "AngularPosition", state: ref _orientationControllerState, dt: dt, Kp: _positionKp, Ki: _positionKi, Kd: _positionKd, signedError: SignedOrientationError(currentForward: transform.forward, currentPosition: transform.position));
+
+            // Angular velocity controller
+            _throttle = ControllerStep(name: "AngularVelocity", state: ref _velocityControllerState, dt: dt, Kp: _velocityKp, Ki: _velocityKi, Kd: _velocityKd, signedError: targetAngularVelocity - angularVelocity);
         }
 
         // Simulate moving vehicle
