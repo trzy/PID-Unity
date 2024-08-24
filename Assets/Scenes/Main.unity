@@ -744,6 +744,7 @@ GameObject:
   - component: {fileID: 1984014834}
   - component: {fileID: 1984014833}
   - component: {fileID: 1984014835}
+  - component: {fileID: 1984014836}
   m_Layer: 0
   m_Name: Car
   m_TagString: Untagged
@@ -810,6 +811,25 @@ MonoBehaviour:
   _velocityKi: 0
   _velocityKd: 0
   _integralEnabledDistance: 5
+--- !u!114 &1984014836
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1984014832}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c5df65a8784f724b97be78b1827b5b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _target: {fileID: 703564537}
+  _maximumAngularAcceleration: 180
+  _maximumAngularSpeed: 720
+  _controlLoopFrequency: 10
+  _Kp: 0.1
+  _Ki: 0
+  _Kd: 0.1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
